@@ -1,0 +1,10 @@
+server = github.com
+repouser = yupe
+reponame = yupe
+
+state = closed
+since = 2015_04_2500:00:00
+mentioned = yupe
+milestone = 1.0
+label =
+format = short
