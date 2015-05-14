@@ -1,10 +1,8 @@
-server = github.com
+server = api.github.com
 repouser = yupe
 reponame = yupe
 
 state = closed
-since = 2015_04_2500:00:00
-mentioned = yupe
+since = 2014-04-25T00:00:00Z
+assignee = yupe
 milestone = 1.0
-label =
-format = short

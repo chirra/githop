@@ -2,43 +2,24 @@
 
 import urllib2
 import sys
+import json
 
-#url = "https://api.github.com/yupe/yupe/issues"
-#url = "https://api.github.com/repos/yupe/yupe/issues"
 
 params = {"server": "api.github.com"}
-#allow_params = ("server", "repouser", "reponame", "state", "since", "mentioned", "milestone", "label", "format")
 config_file = ".githop"
 
 
-def isUpHTTP(url):
-    #ssl._create_default_https_context = ssl._create_unverified_context
-    result = True
-
-    try:
-        result = urllib2.urlopen(url).read()
-    except:
-        result = False
-    return result
-
-
 def add_param(name, value):
-    #default values
-    #params["server"] = "api.github.com"
-    #if name in allow_params:
-
     params[name] = value
-    # else: throw "Invalid argument exception"
-
-
-def check_param(param):
-    pass
 
 
 def get_params_from_command_prompt():
-    for arg in sys.argv:
+    if len(sys.argv) < 2:
+        print "Usage: githop user repositarium [server=githubserver] [since=YYYY-MM-DDTHH:MM:SSZ] [state=open|close] " \
+              "[assignee=<username>] [labels=<label1>,<label2>,..,<labelN>] [milestone=<milestone>]"
+    for arg in sys.argv[1:]:
         try:
-            hlp = arg.split(':')
+            hlp = arg.split('=')
             add_param(hlp[0], hlp[1])
         except:
             pass
@@ -48,9 +29,9 @@ def get_params_from_file():
     f = open(config_file)
     lines = f.readlines()
     f.close()
+
     for line in lines:
         try:
-            print line
             hlp = line.split('=')
             add_param(hlp[0].strip(), hlp[1].strip())
         except:
@@ -59,21 +40,14 @@ def get_params_from_file():
 
 def create_url():
     #Exit with error if mustHave params not present
-    #url = "https://\s/repos/\s/\s/issues/" % (params.pop("server"), params.pop("repouser"), params.pop("reponame"))
     url = "https://{0}/repos/{1}/{2}/issues".format(params.pop("server"), params.pop("repouser"), params.pop("reponame"))
-
-    #if params:
-     #   url += '?'
-        #''.join([url, "?"])
-
 
     #Ignore if params not present
     #for (key, value) in params.items():
-    par = ','.join(["%s=%s" % (k, v) for k, v in params.items()])
+    par = '&'.join(["%s=%s" % (k, v) for k, v in params.items() if v])
     if par:
         url = url + '?' + par
     return url
-
 
 
 def get_url(url):
@@ -84,15 +58,28 @@ def get_url(url):
     return result
 
 
-def parse_url():
-    for param in sys.argv:
-        print param
+def parse_url(response, *args):
+    parsed_json = json.loads(response)  # list, every element is dictionary
 
-#params = {}
+    result = []
+    for element in parsed_json:
+        for key, value in element.items():
+            if key in args:
+                result.append("{0}: {1}".format(key, value))
+            #result.append((["%s=%s" % (k, v) for k, v in params.items() if v]))
+        result += '\n'
+        return result
+
+
+def out(output_list):
+    for item in output_list:
+        print item
+
 
 get_params_from_file()
 get_params_from_command_prompt()
-#print params.pop("server")
 url = create_url()
-print url
-#print get_url("https://api.github.com/repos/yupe/yupe/issues")
+response = get_url(url)
+output_list = parse_url(response, "state", "milestone", "title", "body", "labels")
+
+pass
